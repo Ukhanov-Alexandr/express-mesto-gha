@@ -20,7 +20,7 @@ module.exports.getUser = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь по указанному _id не найден' });
+        return res.status(BAD_REQUEST_CODE).send({ message: 'Пользователь по указанному _id не найден' });
       }
       return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });

@@ -29,10 +29,10 @@ module.exports.createCard = (req, res) => {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(200).send(card))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные при создании карточки' });
       }
-      return res.status(BAD_REQUEST_CODE).send({ message: 'На сервере произошла ошибка' });
+      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -44,7 +44,7 @@ module.exports.deleteCard = (req, res) => {
       if (err.name === 'CastError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Карточка с указанным _id не найдена' });
       }
-      return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
+      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -59,10 +59,10 @@ module.exports.likeCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные для постановки/снятии лайка' });
-      } if (err.name === 'DocumentNotFoundError') {
+      } if (err.name === 'NotFoundError') {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Передан несуществующий _id карточки' });
       }
-      return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
+      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -77,7 +77,7 @@ module.exports.dislikeCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные для постановки/снятии лайка' });
-      } if (err.name === 'DocumentNotFoundError') {
+      } if (err.name === 'NotFoundError') {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Передан несуществующий _id карточки' });
       }
       return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });

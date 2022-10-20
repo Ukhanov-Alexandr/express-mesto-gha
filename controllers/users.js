@@ -66,13 +66,12 @@ module.exports.updateUser = async (req, res) => {
     .orFail(new NotFoundError())
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные при обновлении профиля' });
-      } if (err.name === 'DocumentNotFoundError') {
+      } if (err.name === 'NotFoundError') {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь с указанным _id не найден' });
       }
-      // console.log(err.name)
-      return res.status(BAD_REQUEST_CODE).send({ message: 'На сервере произошла ошибка' });
+      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -91,7 +90,7 @@ module.exports.updateUserAvatar = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные при обновлении аватара' });
-      } if (err.name === 'DocumentNotFoundError') {
+      } if (err.name === 'NotFoundError') {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь с указанным _id не найден' });
       }
       return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });

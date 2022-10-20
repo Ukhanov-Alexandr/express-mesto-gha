@@ -24,7 +24,7 @@ module.exports.createCard = (req, res) => {
       if (err.name === 'CastError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные при создании карточки' });
       }
-      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
+      return res.status(BAD_REQUEST_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
 

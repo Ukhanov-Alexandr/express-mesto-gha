@@ -69,7 +69,7 @@ module.exports.updateUser = async (req, res) => {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь с указанным _id не найден' });
       }
       // console.log(err.name)
-      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
+      return res.status(BAD_REQUEST_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
 

@@ -31,7 +31,10 @@ module.exports.getUser = (req, res) => {
       if (err.name === 'CastError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Пользователь по указанному _id не найден' });
       }
-      return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
+      if (err.name === 'NotFoundError') {
+        return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь по указанному _id не найден' });
+      }
+      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
 

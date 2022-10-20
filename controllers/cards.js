@@ -4,6 +4,14 @@ const BAD_REQUEST_CODE = 400;
 const NOT_FOUND_ERROR_CODE = 404;
 const DEFAULT_ERROR_CODE = 500;
 
+class NotFoundError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'NotFoundError';
+    this.statusCode = 404;
+  }
+}
+
 module.exports.getCards = (req, res) => {
   Card.find({})
     .populate('owner')
@@ -30,11 +38,12 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.id)
+    .orFail(new NotFoundError())
     .then((card) => res.status(200).send(card))
     // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(BAD_REQUEST_CODE).send({ message: 'Карточка с указанным _id не найдена' });
+        return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Карточка с указанным _id не найдена' });
       }
     });
 };
@@ -45,6 +54,7 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
+    .orFail(new NotFoundError())
     .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -52,7 +62,7 @@ module.exports.likeCard = (req, res) => {
       } if (err.name === 'DocumentNotFoundError') {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Передан несуществующий _id карточки' });
       }
-      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
+      return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -62,6 +72,7 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
+    .orFail(new NotFoundError())
     .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -69,6 +80,6 @@ module.exports.dislikeCard = (req, res) => {
       } if (err.name === 'DocumentNotFoundError') {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Передан несуществующий _id карточки' });
       }
-      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
+      return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };

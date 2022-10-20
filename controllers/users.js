@@ -4,6 +4,14 @@ const BAD_REQUEST_CODE = 400;
 const NOT_FOUND_ERROR_CODE = 404;
 const DEFAULT_ERROR_CODE = 500;
 
+class NotFoundError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'NotFoundError';
+    this.statusCode = 400;
+  }
+}
+
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((user) => res.status(200).send(user))
@@ -17,11 +25,14 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   User.findById(req.params.id)
+    .orFail(new NotFoundError())
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Пользователь по указанному _id не найден' });
       }
+      // eslint-disable-next-line no-console
+      console.log('asdads');
       return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
@@ -51,7 +62,7 @@ module.exports.updateUser = async (req, res) => {
       // upsert: true // если пользователь не найден, он будет создан
     },
   )
-    .orFail(new Error('No docs found!'))
+    .orFail(new NotFoundError())
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {

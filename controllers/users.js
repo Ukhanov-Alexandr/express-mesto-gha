@@ -8,7 +8,7 @@ class NotFoundError extends Error {
   constructor(message) {
     super(message);
     this.name = 'NotFoundError';
-    this.statusCode = 400;
+    this.statusCode = 404;
   }
 }
 
@@ -31,8 +31,6 @@ module.exports.getUser = (req, res) => {
       if (err.name === 'CastError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Пользователь по указанному _id не найден' });
       }
-      // eslint-disable-next-line no-console
-      console.log('asdads');
       return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };

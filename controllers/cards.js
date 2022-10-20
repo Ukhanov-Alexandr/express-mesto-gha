@@ -43,7 +43,7 @@ module.exports.deleteCard = (req, res) => {
     // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Карточка с указанным _id не найдена' });
+        return res.status(BAD_REQUEST_CODE).send({ message: 'Карточка с указанным _id не найдена' });
       }
     });
 };

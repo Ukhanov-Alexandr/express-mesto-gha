@@ -54,7 +54,7 @@ module.exports.deleteCard = (req, res) => {
       if (err.name === 'NotFoundError') {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Карточка с указанным _id не найдена' });
       }
-      return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
+      return res.status(DEFAULT_ERROR_CODE).send({ message: err.message });
     });
 };
 

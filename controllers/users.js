@@ -126,7 +126,6 @@ module.exports.updateUserAvatar = (req, res) => {
 
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
 
   return User.findUserByCredentials(email, password)
     // console.log(password)
@@ -135,13 +134,7 @@ module.exports.login = (req, res) => {
       // const { _id } = user._id;
       // console.log(user._id.toString());
       const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-      // eslint-disable-next-line no-console
-      console.log(token);
-      res.cookie('jwt', token, {
-        maxAge: 3600000,
-        httpOnly: true,
-      })
-        .json({ message: 'Logged in successfully 😊 👌' });
+      res.send({ token });
     })
     .catch((err) => {
       res.status(401).send({ message: err.message });

@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
   BAD_REQUEST_CODE,
@@ -5,6 +7,8 @@ const {
   DEFAULT_ERROR_CODE,
   NotFoundError,
 } = require('../errors/errors');
+
+// const { TOKEN_KEY = 'some-secret-key' } = process.env;
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -33,20 +37,49 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  // eslint-disable-next-line no-console
+  console.log(name, about, avatar, email, password);
 
-  User.create({ name, about, avatar })
+  bcrypt.hash(password, 10)
+    .then((hash) => {
+      User.create({
+        name, about, avatar, email, password: hash,
+      });
+    })
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные при создании пользователя' });
       }
+      // console.log(err)
       return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
+module.exports.getUserInfo = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (user) {
+        res.status(200).send({
+          _id: user._id,
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          email: user.email,
+        });
+      // eslint-disable-next-line no-new
+      } else { throw new Error('Пользователь не найден'); }
+    })
+    .catch((err) => next(err));
+};
+
 module.exports.updateUser = async (req, res) => {
   const { name, about } = req.body;
+  // eslint-disable-next-line no-console
+  console.log(req.user._id);
 
   await User.findByIdAndUpdate(
     req.user._id,
@@ -88,5 +121,29 @@ module.exports.updateUserAvatar = (req, res) => {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь с указанным _id не найден' });
       }
       return res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' });
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  console.log(req.body);
+
+  return User.findUserByCredentials(email, password)
+    // console.log(password)
+    .then((user) => {
+      // eslint-disable-next-line no-console
+      // const { _id } = user._id;
+      // console.log(user._id.toString());
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      // eslint-disable-next-line no-console
+      console.log(token);
+      res.cookie('jwt', token, {
+        maxAge: 3600000,
+        httpOnly: true,
+      })
+        .json({ message: 'Logged in successfully 😊 👌' });
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
     });
 };

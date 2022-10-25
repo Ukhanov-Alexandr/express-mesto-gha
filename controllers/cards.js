@@ -31,9 +31,22 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.id)
+  // eslint-disable-next-line no-console
+  console.log(req.user._id);
+
+  Card.findById(req.params.id)
     .orFail(new NotFoundError())
-    .then((card) => res.send(card))
+    .then((card) => {
+      const ownerId = req.user._id;
+      // eslint-disable-next-line no-console
+      console.log(card.owner);
+      if (card.owner.toString() === ownerId.toString()) {
+        card.delete()
+          .then(() => { res.send(`Карта ${card} - успешно удалена`); });
+      } else {
+        throw new Error('Вы не можете удалть чужую карточку!');
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(BAD_REQUEST_CODE).send({ message: 'Переданы некорректные данные при удалении карточки' });

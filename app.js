@@ -7,7 +7,7 @@ const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/NotFoundError');
-const ErrorHandler = require('./errors/ErrorHandler');
+// const ErrorHandler = require('./errors/ErrorHandler');
 // const regValidate = require('./middlewares/celebrate');
 
 const { PORT = 3000 } = process.env;
@@ -33,7 +33,17 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 app.use('/*', (req, res, next) => next(new NotFoundError('Запрашиваемый ресурс не найден')));
 
-app.use(ErrorHandler);
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
+  next();
+});
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console

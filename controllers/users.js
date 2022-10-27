@@ -46,8 +46,8 @@ module.exports.createUser = (req, res, next) => {
       });
     })
     .then((user) => res.send(user))
-    .catch((err) => {
-      next(err);
+    .catch(() => {
+      next(new ValidationError('Переданы некорректные данные при создании пользователя'));
     });
 };
 

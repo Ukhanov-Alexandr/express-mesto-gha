@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { celebrate, Joi, errors } = require('celebrate');
+const validator = require('validator');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
@@ -32,7 +33,12 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().min(2).max(30),
+    avatar: Joi.string().custom((value, helper) => {
+      if (!validator.isURL(value)) {
+        return helper.message('введите валидный url');
+      }
+      return value;
+    }),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),

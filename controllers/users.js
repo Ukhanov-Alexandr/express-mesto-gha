@@ -33,6 +33,7 @@ module.exports.getUser = (req, res, next) => {
     });
 };
 
+// asdasd
 module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
@@ -45,8 +46,8 @@ module.exports.createUser = (req, res, next) => {
       });
     })
     .then((user) => res.send(user))
-    .catch(() => {
-      next(new ValidationError('Переданы некорректные данные при создании пользователя'));
+    .catch((err) => {
+      next(err);
     });
 };
 

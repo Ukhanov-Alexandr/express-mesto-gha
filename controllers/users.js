@@ -45,10 +45,13 @@ module.exports.createUser = (req, res, next) => {
         name, about, avatar, email, password: hash,
       });
     })
-    .then((user) => res.send(user))
-    .catch(() => {
-      next(new ValidationError('Переданы некорректные данные при создании пользователя'));
-    });
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Переданы некорректные данные при создании пользователя');
+      }
+      res.send(user);
+    })
+    .catch(next);
 };
 
 module.exports.getUserInfo = (req, res, next) => {

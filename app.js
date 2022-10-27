@@ -2,13 +2,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { celebrate, Joi } = require('celebrate');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/NotFoundError');
 // const ErrorHandler = require('./errors/ErrorHandler');
-const regValidate = require('./middlewares/celebrate');
+// const signupValidate = require('./middlewares/celebrate');
 
 const { PORT = 3000 } = process.env;
 
@@ -27,7 +28,15 @@ mongoose.connect('mongodb://localhost:27017/mestodb')
   .catch((err) => console.log(err, '«Ошибка подключения к базе данных»'));
 
 app.post('/signin', login);
-app.post('/signup', regValidate, createUser);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().min(2).max(30),
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
+}), createUser);
 app.use(auth);
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);

@@ -38,7 +38,9 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-
+  if (!password) {
+    throw new ValidationError('Переданы некорректные данные при создании пользователя');
+  }
   bcrypt.hash(password, 10)
     .then((hash) => {
       User.create({
@@ -57,16 +59,16 @@ module.exports.createUser = (req, res, next) => {
 module.exports.getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
-      if (user) {
-        res.status(200).send({
-          _id: user._id,
-          name: user.name,
-          about: user.about,
-          avatar: user.avatar,
-          email: user.email,
-        });
-      // eslint-disable-next-line no-new
-      } else { throw new NotFoundError('Пользователь не найден'); }
+      if (!user) {
+        throw new NotFoundError('Пользователь не найден');
+      }
+      res.status(200).send({
+        _id: user._id,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      });
     })
     .catch(next);
 };

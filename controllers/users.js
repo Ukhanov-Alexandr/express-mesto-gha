@@ -37,8 +37,6 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  // eslint-disable-next-line no-console
-  console.log(name, about, avatar, email, password);
 
   bcrypt.hash(password, 10)
     .then((hash) => {
@@ -47,11 +45,8 @@ module.exports.createUser = (req, res, next) => {
       });
     })
     .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new ValidationError('Переданы некорректные данные при создании пользователя');
-      }
-      next(err);
+    .catch(() => {
+      next(new ValidationError('Переданы некорректные данные при создании пользователя'));
     });
 };
 

@@ -4,7 +4,7 @@ const {
   NOT_FOUND_ERROR_CODE,
   DEFAULT_ERROR_CODE,
   NotFoundError,
-} = require('../errors/errors');
+} = require('../errors/NotFoundError');
 
 module.exports.getCards = (req, res) => {
   Card.find({})

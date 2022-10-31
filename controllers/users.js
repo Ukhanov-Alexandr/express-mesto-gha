@@ -38,6 +38,7 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
+  // console.log(name, about, avatar);
   if (!password) {
     throw new ValidationError('Переданы некорректные данные при создании пользователя');
   }
@@ -45,13 +46,13 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => {
       User.create({
         name, about, avatar, email, password: hash,
-      });
-    })
-    .then((user) => {
-      if (!user) {
-        throw new ValidationError('Переданы некорректные данные при создании пользователя');
-      }
-      res.send(user);
+      })
+        .then((user) => {
+          if (!user) {
+            throw new ValidationError('Переданы некорректные данные при создании пользователя');
+          }
+          res.send(user);
+        });
     })
     .catch(next);
 };

@@ -9,7 +9,6 @@ const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/NotFoundError');
-// const ErrorHandler = require('./errors/ErrorHandler');
 // const signupValidate = require('./middlewares/celebrate');
 
 const { PORT = 3000 } = process.env;
@@ -31,9 +30,9 @@ mongoose.connect('mongodb://localhost:27017/mestodb')
 app.post('/signin', login);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().custom((value, helper) => {
+    name: Joi.string().min(2).max(30).default('«Жак-Ив Кусто»'),
+    about: Joi.string().min(2).max(30).default('«Исследователь»'),
+    avatar: Joi.string().default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png').custom((value, helper) => {
       if (!validator.isURL(value)) {
         return helper.message('введите валидный url');
       }

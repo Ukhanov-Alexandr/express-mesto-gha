@@ -1,7 +1,7 @@
 const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
-const AuthorizedError = require('../errors/AuthorizedError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -9,7 +9,7 @@ module.exports.getCards = (req, res, next) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные при создании карточки');
+        next(new ValidationError('Переданы некорректные данные при создании карточки'));
       }
       next(err);
     });
@@ -21,7 +21,7 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные при создании карточки');
+        next(new ValidationError('Переданы некорректные данные при создании карточки'));
       }
       next(err);
     });
@@ -36,12 +36,12 @@ module.exports.deleteCard = (req, res, next) => {
         card.delete()
           .then(() => { res.send(`Карта ${card._id} - успешно удалена`); });
       } else {
-        throw new AuthorizedError('Вы не можете удалть чужую карточку!');
+        throw new ForbiddenError('Вы не можете удалть чужую карточку!');
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные при удалении карточки');
+        next(new ValidationError('Переданы некорректные данные при удалении карточки'));
       }
       next(err);
     });
@@ -57,7 +57,7 @@ module.exports.likeCard = (req, res, next) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные для постановки/снятии лайка');
+        next(new ValidationError('Переданы некорректные данные для постановки/снятии лайка'));
       }
       next(err);
     });
@@ -73,7 +73,7 @@ module.exports.dislikeCard = (req, res, next) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные для постановки/снятии лайка');
+        next(new ValidationError('Переданы некорректные данные для постановки/снятии лайка'));
       }
       next(err);
     });

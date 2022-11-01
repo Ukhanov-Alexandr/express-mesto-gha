@@ -10,8 +10,8 @@ const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/NotFoundError');
-const errorHandler = require('./errors/errorHandler');
-const { signupValidate } = require('./middlewares/celebrate');
+const defaultErrorHandler = require('./errors/defaultErrorHandler');
+const { signupValidate, loginValidate } = require('./middlewares/celebrate');
 
 const { PORT = 3000 } = process.env;
 
@@ -27,7 +27,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb')
   // eslint-disable-next-line no-console
   .catch((err) => console.log(err, '«Ошибка подключения к базе данных»'));
 
-app.post('/signin', login);
+app.post('/signin', loginValidate, login);
 app.post('/signup', signupValidate, createUser);
 app.use(auth);
 app.use('/users', usersRouter);
@@ -35,7 +35,7 @@ app.use('/cards', cardsRouter);
 app.use('/*', (req, res, next) => next(new NotFoundError('Запрашиваемый ресурс не найден')));
 
 app.use(errors());
-app.use(errorHandler);
+app.use(defaultErrorHandler);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console

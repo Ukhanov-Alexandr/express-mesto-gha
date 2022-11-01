@@ -4,6 +4,7 @@ const User = require('../models/user');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
+const AuthorizedError = require('../errors/AuthorizedError');
 
 const { TOKEN_KEY = 'some-secret-key' } = process.env;
 
@@ -12,7 +13,7 @@ module.exports.getUsers = (req, res, next) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные при создании пользователя');
+        next(new ValidationError('Переданы некорректные данные при создании пользователя'));
       } else {
         next(err);
       }
@@ -25,21 +26,20 @@ module.exports.getUser = (req, res, next) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Передан некорректный _id пользователя');
+        next(new ValidationError('Передан некорректный _id пользователя'));
       }
       if (err.name === 'NotFoundError') {
-        throw new NotFoundError('Пользователь по указанному _id не найден');
+        next(new NotFoundError('Пользователь по указанному _id не найден'));
       }
       next(err);
     });
 };
 
-// asdasd
 module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  // console.log(name, about, avatar);
+
   if (!password) {
     throw new ValidationError('Переданы некорректные данные при создании пользователя');
   }
@@ -51,7 +51,7 @@ module.exports.createUser = (req, res, next) => {
       if (!user) {
         throw new ValidationError('Переданы некорректные данные при создании пользователя');
       }
-      res.send({
+      res.status(201).send({
         _id: user._id,
         email: user.email,
         name: user.name,
@@ -61,9 +61,10 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        throw new ConflictError(`Пользователь с таким ${email} уже зарегистрирован`);
+        next(new ConflictError(`Пользователь с таким ${email} уже зарегистрирован`));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -86,8 +87,6 @@ module.exports.getUserInfo = (req, res, next) => {
 
 module.exports.updateUser = async (req, res, next) => {
   const { name, about } = req.body;
-  // eslint-disable-next-line no-console
-  console.log(req.user._id);
 
   await User.findByIdAndUpdate(
     req.user._id,
@@ -102,9 +101,9 @@ module.exports.updateUser = async (req, res, next) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new ValidationError('Переданы некорректные данные при обновлении профиля');
+        next(new ValidationError('Переданы некорректные данные при обновлении профиля'));
       } if (err.name === 'NotFoundError') {
-        throw new NotFoundError('Пользователь с указанным _id не найден');
+        next(new NotFoundError('Пользователь с указанным _id не найден'));
       }
       next(err);
     });
@@ -124,15 +123,15 @@ module.exports.updateUserAvatar = (req, res, next) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные при обновлении аватара');
+        next(new ValidationError('Переданы некорректные данные при обновлении аватара'));
       } if (err.name === 'NotFoundError') {
-        throw new NotFoundError('Пользователь с указанным _id не найден');
+        next(new NotFoundError('Пользователь с указанным _id не найден'));
       }
       next(err);
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -140,7 +139,5 @@ module.exports.login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, TOKEN_KEY, { expiresIn: '7d' });
       res.send({ token });
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
+    .catch(() => next(new AuthorizedError('Неправильный email или пароль')));
 };

@@ -8,14 +8,14 @@ const urlCheck = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    default: '«Жак-Ив Кусто»',
+    default: 'Жак-Ив Кусто',
     minlength: 2,
     maxlength: 30,
     message: 'поле должно содержать от 2 до 30 символов!',
   },
   about: {
     type: String,
-    default: '«Исследователь»',
+    default: 'Исследователь',
     minlength: 2,
     maxlength: 30,
     message: 'поле должно содержать от 2 до 30 символов!',

@@ -3,8 +3,9 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
+const ConflictError = require('../errors/ConflictError');
 
-// const { TOKEN_KEY = 'some-secret-key' } = process.env;
+const { TOKEN_KEY = 'some-secret-key' } = process.env;
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -43,24 +44,27 @@ module.exports.createUser = (req, res, next) => {
     throw new ValidationError('Переданы некорректные данные при создании пользователя');
   }
   bcrypt.hash(password, 10)
-    .then((hash) => {
-      User.create({
-        name, about, avatar, email, password: hash,
-      })
-        .then((user) => {
-          if (!user) {
-            throw new ValidationError('Переданы некорректные данные при создании пользователя');
-          }
-          res.send({
-            _id: user._id,
-            email: user.email,
-            name: user.name,
-            about: user.about,
-            avatar: user.avatar,
-          });
-        });
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => {
+      if (!user) {
+        throw new ValidationError('Переданы некорректные данные при создании пользователя');
+      }
+      res.send({
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        throw new ConflictError(`Пользователь с таким ${email} уже зарегистрирован`);
+      }
+      next(err);
+    });
 };
 
 module.exports.getUserInfo = (req, res, next) => {
@@ -133,7 +137,7 @@ module.exports.login = (req, res) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, TOKEN_KEY, { expiresIn: '7d' });
       res.send({ token });
     })
     .catch((err) => {

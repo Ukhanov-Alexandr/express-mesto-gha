@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const urlCheck = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
+
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -11,6 +13,12 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(v) {
+        return urlCheck.test(v);
+      },
+      message: 'Введите ссылку!',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

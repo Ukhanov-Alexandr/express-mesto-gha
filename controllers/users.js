@@ -4,20 +4,13 @@ const User = require('../models/user');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
-const AuthorizedError = require('../errors/AuthorizedError');
 
 const { TOKEN_KEY = 'some-secret-key' } = process.env;
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new ValidationError('Переданы некорректные данные при создании пользователя'));
-      } else {
-        next(err);
-      }
-    });
+    .then((users) => res.send(users))
+    .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
@@ -27,9 +20,11 @@ module.exports.getUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new ValidationError('Передан некорректный _id пользователя'));
+        return;
       }
       if (err.name === 'NotFoundError') {
         next(new NotFoundError('Пользователь по указанному _id не найден'));
+        return;
       }
       next(err);
     });
@@ -56,9 +51,11 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new ValidationError('Переданы некорректные данные при создании пользователя'));
+        return;
       }
       if (err.code === 11000) {
         next(new ConflictError(`Пользователь с таким ${email} уже зарегистрирован`));
+        return;
       }
       next(err);
     });
@@ -81,16 +78,15 @@ module.exports.getUserInfo = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.updateUser = async (req, res, next) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
-  await User.findByIdAndUpdate(
+  User.findByIdAndUpdate(
     req.user._id,
     { name, about },
     {
       new: true, // обработчик then получит на вход обновлённую запись
       runValidators: true, // данные будут валидированы перед изменением
-      // upsert: true // если пользователь не найден, он будет создан
     },
   )
     .orFail(new NotFoundError())
@@ -98,8 +94,10 @@ module.exports.updateUser = async (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new ValidationError('Переданы некорректные данные при обновлении профиля'));
+        return;
       } if (err.name === 'NotFoundError') {
         next(new NotFoundError('Пользователь с указанным _id не найден'));
+        return;
       }
       next(err);
     });
@@ -120,8 +118,10 @@ module.exports.updateUserAvatar = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new ValidationError('Переданы некорректные данные при обновлении аватара'));
+        return;
       } if (err.name === 'NotFoundError') {
         next(new NotFoundError('Пользователь с указанным _id не найден'));
+        return;
       }
       next(err);
     });
@@ -135,5 +135,5 @@ module.exports.login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, TOKEN_KEY, { expiresIn: '7d' });
       res.send({ token });
     })
-    .catch(() => next(new AuthorizedError('Неправильный email или пароль')));
+    .catch(next);
 };

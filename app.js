@@ -1,10 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-// const { celebrate, Joi, errors } = require('celebrate');
+// const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
-// const validator = require('validator');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
@@ -19,7 +17,7 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+// app.use(cookieParser());
 
 mongoose.connect('mongodb://localhost:27017/mestodb')
   // eslint-disable-next-line no-console

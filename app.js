@@ -20,9 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(cookieParser());
 
 mongoose.connect('mongodb://localhost:27017/mestodb')
-  // eslint-disable-next-line no-console
   .then(() => console.log('«Соединение с базой данных успешно»'))
-  // eslint-disable-next-line no-console
   .catch((err) => console.log(err, '«Ошибка подключения к базе данных»'));
 
 app.post('/signin', loginValidate, login);
@@ -36,6 +34,5 @@ app.use(errors());
 app.use(defaultErrorHandler);
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
   console.log(`App listening on port ${PORT}`);
 });

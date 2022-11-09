@@ -23,11 +23,9 @@ module.exports.deleteCard = (req, res, next) => {
     .then((card) => {
       const ownerId = req.user._id;
       if (card.owner.toString() === ownerId.toString()) {
-        card.delete()
-          .then(() => { res.json({ message: `Карта ${card._id} - успешно удалена` }); });
-      } else {
-        throw new ForbiddenError('Вы не можете удалть чужую карточку!');
+        return card.delete().then(() => { res.json({ message: `Карта ${card._id} - успешно удалена` }); });
       }
+      throw new ForbiddenError('Вы не можете удалть чужую карточку!');
     })
     .catch((err) => {
       if (err.name === 'CastError') {
